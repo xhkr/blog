@@ -29,7 +29,19 @@
 
     // TODO: Seperating in different months needs to be handled by PHP and SQL.
     // TODO: Get the styling right on buttons, select and svg.
-
+    $month = array("Januari",
+        "Februari",
+        "Mars",
+        "April",
+        "Maj",
+        "Juni",
+        "Juli",
+        "Augusti",
+        "September",
+        "Oktober",
+        "November",
+        "December"
+        );
 ?>
 <main>
     <h1 class="margin-bottom-l">Arkiv</h1>
@@ -47,8 +59,22 @@
           </svg> -->
         </div>
     </form>
+    <form method="GET" action="archive.php">
+        <label for="sort">Filtrera arkivet månadsvis</label>
+        <div class="select-arrows">
+          <select class="form-field form-field__select" name="sort-month" id="sort-month">
+            <?php foreach ($month as $actualMonth): ?>
+              <option value="month"><?php echo $actualMonth ?></option>
+            <?php endforeach; ?>
+          </select>
+          <button class="button button--small border-radius margin-bottom-l" type="submit">Sortera</button>
+          <!-- <svg class="icon select-arrows">
+            <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#select-arrows"></use>
+          </svg> -->
+        </div>
+    </form>
     <div class="list-wrapper">
-        <h2>November 2016</h2>
+        <!-- <h2>November 2016</h2> -->
         <ul class="no-padding">
         <?php while (mysqli_stmt_fetch($stmt)): ?>
             <li class="list-style-none"><span class="saffron-text primary-brand-font">[<?php echo formatDate($created); ?>]</span><a href="post.php?getpost=<?php echo $id ?>"><?php echo $title; ?></a></li>
