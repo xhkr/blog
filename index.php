@@ -1,7 +1,10 @@
 <?php
+    // TODO: Right now, the div with comment bubble show comments is not used.
+    // Decision is needed!
 
     // File to include
-    require_once "./templates/header.php"; // Header content.
+    require_once "./templates/header.php";
+    require_once "./assets/functions.php";
 
     // Variables
     $display = NULL; // To avoid "undefined variable".
@@ -15,7 +18,7 @@
         $display = $_GET["display"];
 
         // New SQL statement WHERE categories.category = $display.
-        $query = "SELECT posts.*, categories.name FROM posts LEFT JOIN categories ON posts.categoryid = categories.id WHERE categories.id = '{$display}' AND published = 1";
+        $query = "SELECT posts.*, categories.name FROM posts LEFT JOIN categories ON posts.categoryid = categories.id WHERE categories.id = '{$display}' AND published = 1 ORDER BY created DESC";
     }
 
     // Execute query.
@@ -36,22 +39,22 @@
             "categoryName" => $categoryName
         ));
         // TODO: Trim $created so that only date is shown.
-    }
+    } ?>
 
-    for ($i=0; $i < count($posts); $i++):
+    <div class="content-slides-in">
+
+    <?php for ($i=0; $i < count($posts); $i++):
         $post = $posts[$i];
     ?>
     <article class="list">
         <div class="blogpost-wrapper">
-            <img src="<?php echo $post["image"]; ?>" alt="<?php echo $post["title"]; ?>">
+            <a href="post.php?getpost=<?php echo $post["id"] ?>"><img src="<?php echo $post["image"]; ?>" alt="<?php echo $post["title"]; ?>"></a>
             <div class="blogpost-wrapper__text">
-                <h2><?php echo $post["title"]; ?></h2>
+                <h1><a href="post.php?getpost=<?php echo $post["id"] ?>"><?php echo formatInnerHtml($post["title"]); ?></a></h1>
                 <p class="tag">[Tags: <a href="?display=<?php echo $post["categoryId"] ?>"><?php echo str_replace(' ', '', $post["categoryName"]); ?>]</a> [<?php echo $post["created"] ?>]</p>
-                <p><?php echo $post["content"]; ?></p>
-                <div class="post-comments">
-                    <div class="comment-wrapper">
+                <div class="comment-bubble">
+                    <div class="comment-bubble__show-comments">
                         <?php // START OF COMMENTS
-
                         $totalNumberOfComments = NULL;
                         $errorMessage = NULL;
 
@@ -69,24 +72,25 @@
                             $numberOfComments = mysqli_stmt_num_rows($stmt);
 
                             if ($post["id"] == $postId) {
-                                echo "<p class=\"comment-content\">$commentContent</p>";
-                                echo "<p class=\"comment-author\">$commentAuthor</p>";
+                                // TODO: If we want to show these, use styling from utilities.scss.
+                                echo "<p class=\"comment-bubble__comment-content\">$commentContent</p>";
+                                echo "<p class=\"comment-bubble__comment-author\">$commentAuthor</p>";
                                 $totalNumberOfComments++;
                             }
 
                         endwhile;
                         ?>
-                    </div>
-                <?php if ($totalNumberOfComments): ?>
-                        <i class="fa fa-comment" aria-hidden="true"></i>
-                        <p><?php echo "$totalNumberOfComments" ?></p>
-                    </div>
-                <?php endif; ?>
-            </div>
-        </div>
+                    </div> <!-- End of comment-bubble__show-comments -->
+                    <?php if ($totalNumberOfComments): ?>
+                        <a href="post.php?getpost=<?php echo $post["id"] ?>"><i class="fa fa-comment comment-bubble__offset-text" aria-hidden="true"></i>
+                        <p class="comment-bubble__number"><?php echo "$totalNumberOfComments" ?></p></a>
+                    <?php endif; ?>
+                    </div> <!-- End of comment-bubble -->
+            </div> <!-- End of blogpost-wrapper__text -->
+        </div> <!-- End of blogpost-wrapper -->
     </article>
 <?php endfor; ?>
+</div>
 
-
-<?php if($errorMessage) { echo $errorMessage; }
+<?php if ($errorMessage) { echo $errorMessage; }
 require_once "./templates/footer.php"; ?>

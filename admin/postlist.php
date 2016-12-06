@@ -1,11 +1,14 @@
 <?php
     require_once "../templates/header.php";
     require_once "../assets/session.php";
+    require_once "../assets/functions.php";
 
     // This redirects user to login.php if not logged in.
     if (!isset($_SESSION["logged-in"]) && $_SESSION["logged-in"] == false) {
         header("Location: ../login.php");
     }
+
+    // TODO: Ta reda på om bildernas titlar ska vara h2 eller h1.
 
 /*******************************************************************************
    START OF FEEDBACK MESSAGE AND DATABASE UPDATE
@@ -41,7 +44,7 @@
 
     // SQL statement with LEFT JOIN table -> posts & categories.
     // TODO: Just get the variables you need.
-    $query  = "SELECT posts.*, categories.name FROM posts LEFT JOIN categories ON posts.categoryid = categories.id";
+    $query  = "SELECT posts.*, categories.name FROM posts LEFT JOIN categories ON posts.categoryid = categories.id ORDER BY created DESC";
 
     // Execute query.
     if ($stmt->prepare($query)) {
@@ -53,15 +56,17 @@
   END OF QUERY AND STMT THAT IS USED TO PRINT POST LIST
 *******************************************************************************/
 ?>
-<main class="dark">
-    <h2 class="inverted-text-color">Alla inlägg</h2>
+<main>
+    <h1 class="center-text">Alla inlägg</h1>
     <form method="POST" action="./postlist.php">
         <table class="table-listing">
             <thead class="hidden">
-                <td>Foto</td>
-                <td>Rubrik</td>
-                <td>Redigera</td>
-                <td>Ta bort</td>
+                <tr>
+                    <td>Foto</td>
+                    <td>Rubrik</td>
+                    <td>Redigera</td>
+                    <td>Ta bort</td>
+                </tr>
             </thead>
             <tbody>
                 <?php while (mysqli_stmt_fetch($stmt)):
@@ -78,7 +83,7 @@
                         <?php if ($draft) { echo $draftMessage; } ?>
                     </td>
                     <td class="relative-container">
-                        <h3 class="table-listing__title table-listing__title--on-img"><?php echo $title; ?></h3>
+                        <h2 class="table-listing__title--on-img"><?php echo formatInnerHtml($title); ?></h2>
                     </td>
                     <td class="relative-container">
                         <button type="submit" class="button" name="edit-post" value="<?php echo $id; ?>">Redigera</button>

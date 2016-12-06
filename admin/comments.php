@@ -8,7 +8,20 @@
         header("Location: ../login.php");
     endif;
 
-    // For superuser print all comments
+
+
+    // If-statement to check if button for removing comments is set
+    if (isset ($_POST["remove-comment"])):
+        $commentToDelete = $_POST["remove-comment"];
+        $query = "DELETE FROM comments WHERE id = '{$commentToDelete}'";
+        if ($stmt->prepare($query)):
+            $stmt->execute();
+        else:
+            echo "Fel på queryn";
+        endif;
+    endif;
+
+        // For superuser print all comments
     if ($_SESSION["permission"] == 1):
 
         // select all comments and username and email from user
@@ -41,46 +54,40 @@
             echo "wrong query";
         endif;
     endif;
-
-    // If-statement to check if button for removing comments is set
-    if (isset ($_POST["remove-comment"])):
-        $commentToDelete = $_POST["remove-comment"];
-        $query = "DELETE FROM comments WHERE id = '{$commentToDelete}'";
-        if ($stmt->prepare($query)):
-            $stmt->execute();
-        else:
-            echo "Fel på queryn";
-        endif;
-    endif;
 ?>
-<main class="dark">
-    <h2 class="inverted-text-color">Kommentarer</h2>
+<main>
+    <h1 class="center-text margin-bottom-l">Kommentarer</h1>
     <form method="POST" action="./comments.php">
-        <table class="table-listing--inverted">
+        <table class="table-listing__centered-content">
             <thead class="hidden">
-                <td>Kommentar</td>
-                <td>Namn</td>
-                <td>E-mail</td>
-                <td>Datum</td>
-                <td>Post</td>
-                <td>Ta bort</td>
+                <tr>
+                    <td>Kommentar</td>
+                    <td>Namn</td>
+                    <td>E-mail</td>
+                    <td>Datum</td>
+                    <td>Post</td>
+                    <td>Ta bort</td>
+                </tr>
             </thead>
             <tbody>
-                <tr class="table-listing__row">
                     <?php while (mysqli_stmt_fetch($stmt)): ?>
-                        <td class="relative-container"><?php echo $content; ?></td>
-                        <td class="relative-container">Skriven av: <?php echo checkExistingOrReturnPredefined($name, $userName); ?></td>
-                        <td class="relative-container saffron-text primary-brand-font">[<?php echo $date; ?>] [Kommentar på inlägg:
-                            <?php
-                            // TODO: Change this to post title instead.
-                            echo $postId;
-                            ?>]</td>
-                        <td class="relative-container"><?php echo checkExistingOrReturnPredefined($email, $userMail); ?></td>
-                        <td class="relative-container">
-                            <button type="submit" class="button error margin-bottom-xl" name="remove-comment" value="<?php echo $id; ?>">Ta bort kommentar</button>
-                        </td>
+                        <tr>
+                            <td class="inline-block"><?php echo $content; ?></td>
+                            <td class="inline-block">Skriven av: <?php echo checkExistingOrReturnPredefined($name, $userName); ?></td>
+                            <td class="inline-block">E-postadress: <a href="mailto:<?php echo checkExistingOrReturnPredefined($email, $userMail); ?>"><?php echo checkExistingOrReturnPredefined($email, $userMail); ?></a></td>
+                            <td class="inline-block saffron-text primary-brand-font">[<?php echo $date; ?>]</td>
+                            <td class="inline-block saffron-text primary-brand-font">
+                            [Kommentar på inlägg:
+                                <?php
+                                // TODO: Change this to post title instead.
+                                echo $postId;
+                                ?>]
+                            </td>
+                            <td class="inline-block">
+                                <button type="submit" class="button error margin-bottom-xl" name="remove-comment" value="<?php echo $commentId; ?>">Ta bort kommentar</button>
+                            </td>
+                        </tr>
                     <?php endwhile; ?>
-                </tr>
             </tbody>
         </table>
     </form>

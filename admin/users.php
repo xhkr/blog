@@ -14,10 +14,11 @@
 /*******************************************************************************
    TODO: THIS PAGE NEEDS AN ALL REQUIRED FILLED FUNCTION, JUST LIKE POSTEDITOR.
 *******************************************************************************/
+// TODO: Convert if statment on dashboard to a function, use it here. done?
 
     // Reset functions for the internal variables
     $addUser = FALSE;
-    $errorMessage = NULL;
+    //$errorMessage = NULL;
 
     // Set key for printing register form
     if (isset ($_POST["add-user"])) { $addUser = TRUE; }
@@ -41,63 +42,67 @@
         endif;
     endif;
 
-    $query = "SELECT permission, username FROM users";
+    $query = "SELECT permission, username, id FROM users";
     if ($stmt -> prepare($query)) {
         $stmt-> execute();
-        $stmt -> bind_result($permission, $userName);
+        $stmt -> bind_result($permission, $userName, $userId);
     }
-
-    // This checks current user's permission level.
-    $userPermission = strtolower(convertPermissionToString($permission));
 ?>
 <main>
-    <h2>Användare</h2>
-    <div class="flexbox-wrapper">
-    <form method="post" action="users.php" class="list-wrapper">
-        <div class="list">
-            <div class="inner-list">
-                <?php while (mysqli_stmt_fetch($stmt)): ?>
-                <input type="checkbox" name="checklist[]" value="<?php echo $userId; ?>">
+    <h1 class="center-text margin-bottom-l">Användare</h1>
+    <form method="post" action="#nav-adduser">
+        <div class="flex-list">
+            <?php while (mysqli_stmt_fetch($stmt)): ?>
+            <div class="flex-list__item">
+                <p><?php echo "Användarnamn: $userName"; ?></p>
                 <?php
-                    // TODO: Convert if statment on dashboard to a function, use it here.
-                    echo "$userName – behörighet: $userPermission";?><br>
-                <?php endwhile; ?>
+                    // This checks current user's permission level.
+                    $userPermission = strtolower(convertPermissionToString($permission));
+                    $userPermission = utf8_encode($userPermission);
+                ?>
+                <p class="saffron-text primary-brand-font"><?php echo "Behörighet: $userPermission"; ?></p>
+                <label class="checkbox-wrapper">
+                    <input class="checkbox-wrapper__checkbox" type="checkbox" name="checklist[]" value="<?php echo $userId; ?>">
+                    <i class="checkbox-wrapper__icon"></i>
+                    Radera
+                </label>
             </div>
+            <?php endwhile; ?>
         </div>
         <button type="submit" value="Ta bort användare" name="remove-user" class="button error">Ta bort användare</button>
-        <button type="submit" value="Lägg till ny användare" name="add-user" class="button">Lägg till ny användare</button>
+        <button type="submit" value="Lägg till ny användare" name="add-user" class="button" id="nav-adduser">Lägg till ny användare</button>
     </form>
     <?php if ($addUser == TRUE): ?>
-    <form method="post" action="../assets/registercheck.php">
-        <fieldset>
-            <legend class="hidden">Lägg till ny användare</legend>
-            <label class="form-field__label" for="userName">Användarnamn</label>
-            <input class="form-field" type="text" name="userName" id="userName" required>
-            <label class="form-field__label" for="passWord">Lösenord</label>
-            <input class="form-field" type="password" name="passWord" id="passWord" required>
-            <label class="form-field__label" for="firstName">Förnamn</label>
-            <input class="form-field" type="text" name="firstName" id="firstName" required>
-            <label class="form-field__label" for="lastName">Efternamn</label>
-            <input class="form-field" type="text" name="lastName" id="lastName">
-            <label class="form-field__label" for="eMail">E-post</label>
-            <input class="form-field" type="email" name="eMail" id="eMail" required>
-            <label class="form-field__label" for="website">Webbplats</label>
-            <input class="form-field" type="text" name="website" id="website">
-            <label class="form-field__label" for="description">Beskrivning</label>
-            <textarea class="form-field" cols="25" rows="7" name="description" id="description"></textarea>
-            <button id="button" type="submit" name="register" value="Lägg till" class="button">Lägg till</button>
-        </fieldset>
-    </form>
-</div>
+        <form method="post" action="../assets/registercheck.php">
+            <fieldset>
+                <h2>Lägg till ny användare</h2>
+                <legend class="hidden">Lägg till ny användare</legend>
+                <label class="form-field__label" for="userName">Användarnamn</label>
+                <input class="form-field" type="text" name="userName" id="userName" required>
+                <label class="form-field__label" for="passWord">Lösenord</label>
+                <input class="form-field" type="password" name="passWord" id="passWord" required>
+                <label class="form-field__label" for="firstName">Förnamn</label>
+                <input class="form-field" type="text" name="firstName" id="firstName" required>
+                <label class="form-field__label" for="lastName">Efternamn</label>
+                <input class="form-field" type="text" name="lastName" id="lastName">
+                <label class="form-field__label" for="eMail">E-post</label>
+                <input class="form-field" type="email" name="eMail" id="eMail" required>
+                <label class="form-field__label" for="website">Webbplats</label>
+                <input class="form-field" type="text" name="website" id="website">
+                <label class="form-field__label" for="description">Beskrivning</label>
+                <textarea class="form-field" cols="25" rows="7" name="description" id="description"></textarea>
+                <button id="button" type="submit" name="register" value="Lägg till" class="button">Lägg till</button>
+            </fieldset>
+        </form>
+    <?php endif; ?>
 </main>
 <?php
-    endif;
     // Printing error message
 
-    if (isset ($_GET["errorMessage"])):
-        if ($_GET["errorMessage"] != NULL):
-            echo $_GET["errorMessage"];
-        endif;
-    endif;
+    //if (isset ($_GET["errorMessage"])):
+       // if ($_GET["errorMessage"] != NULL):
+         //   echo $_GET["errorMessage"];
+       // endif;
+    // endif;
     include_once "../templates/footer.php"; // Footer.
 ?>

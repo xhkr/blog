@@ -1,14 +1,15 @@
 <?php
     require_once "./templates/header.php";
+    require_once "./assets/functions.php";
 
     //TODO: CLEAN UP ARRAYS
-
     //TODO: ERROR-MESSAGES/404
     //TODO: CHECK ARTICLE ELEMENT SEMANTICS
     //TODO: REQUIRE ON INPUT-FIELDS
     //TODO: REMOVE DEV LINK
     //TODO: CHECK $stmt->close();
     //TODO: FIX CLASSES
+    //TODO: FIX ANCHOR LINK WITH TARGET WHEN COMMENTING.
 
 
     $post = array(
@@ -59,7 +60,9 @@
             $stmt->bind_result($id, $userId, $created, $updated, $image, $title, $content, $published, $categoryId, $categoryName, $postUsername);
             $stmt->fetch();
             //$stmt->close();
+            //
 
+            // TODO: If we need to define these, use them down below.
             $post["id"] = $id;
             $post["userid"] = $userId;
             $post["created"] = $created;
@@ -76,7 +79,6 @@
                 // TODO: 404?
                 $errorMessage = "Något gick fel.";
             }
-
     }
 
 /*******************************************************************************
@@ -146,7 +148,7 @@
             if ($stmt->prepare($query)) {
                 $stmt->execute();
                 $stmt->close();
-                header("Location: ./post.php?getpost=$getPost");
+                header("Location: ./post.php?getpost=$getPost#nav-comment-bottom");
 
             } else {
 
@@ -172,23 +174,24 @@
 *******************************************************************************/
 ?>
 <main>
+
 <?php if ($post["id"] != NULL): ?>
 <!-- TODO: Make this semantic -->
     <article class="smaller-font">
         <div class="relative-container">
             <img class="full-width-img" src="<?php echo $post["image"]; ?>" alt="<?php echo $post["title"]; ?>">
-            <a class="relative-container__info" href="index.php?display=<?php echo $post["categoryid"] ?>"><?php echo str_replace(' ', '', $post["categoryname"]); ?></a>
+            <a class="relative-container__info relative-container__link" href="index.php?display=<?php echo $post["categoryid"] ?>">Kategori: <?php echo str_replace(' ', '', $post["categoryname"]); ?></a>
         </div>
         <p class="saffron-text primary-brand-font">[Uppladdad av: <?php echo $post["username"]; ?>] [Publicerad: <?php echo $post["created"]; ?>] <?php if ($post["created"] != $post["updated"]): ?> [Uppdaterad: <?php echo $post["updated"]; ?>] <?php endif; ?></p>
-        <h2 class=""><?php echo $post["title"]; ?></h2>
-        <p><?php echo $post["content"]; ?></p>
+        <h1><?php echo $title; ?></h1>
+        <p><?php echo formatInnerHtml($content); ?></p>
         <?php if (!isset ($_POST["new-comment"])): ?>
-        <form method="post" action="#">
-            <button type="submit" name="new-comment" value="true" class="button margin-bottom-l">Kommentera inlägget</button>
+        <form method="post" action="#nav-comment-top">
+            <button type="submit" name="new-comment" value="true" class="button margin-bottom-l" id="nav-comment-bottom">Kommentera inlägget</button>
         </form>
         <?php elseif (isset ($_POST["new-comment"])): ?>
-        <div class="post-comments padding-normal margin-normal">
-            <h3>Skriv ny kommentar</h3>
+        <div class="comment-container comment-container--xl-margin" id="nav-comment-top">
+            <h2>Skriv ny kommentar</h2>
             <form method="post">
                 <fieldset>
                     <legend class="hidden">Skriv ny kommentar</legend>
@@ -208,8 +211,8 @@
             <!-- FORM END -->
         </div>
         <?php endif; ?>
-        <div class="padding-normal border-normal">
-            <h3>Kommentarer</h3>
+        <div class="comment-container">
+            <h2>Kommentarer</h2>
             <?php while (mysqli_stmt_fetch($stmt)): ?>
             <p><?php echo $commentContent; ?></p>
             <p class="saffron-text primary-brand-font comment__border-bottom">[Av: <?php echo $commentAuthor; ?>] [Skriven den: <?php echo $commentCreated; ?>]</p>
@@ -221,3 +224,4 @@
 
 <!-- TODO: Remove dev link when final -->
 <?php else: echo "<p class='error-msg'>".$errorMessage."</p>"; echo "<u><a href=\"?getpost=1\">for developers</a></u>"; endif; ?>
+<?php require_once "./templates/footer.php"; ?>

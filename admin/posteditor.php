@@ -160,9 +160,9 @@
 ?>
 <main>
     <?php if (isset($_GET["edit"])): ?>
-    <h2>Redigera inlägg</h2>
+    <h1 class="center-text">Redigera inlägg</h1>
     <?php else: ?>
-    <h2>Skapa nytt inlägg</h2>
+    <h1 class="center-text">Skapa nytt inlägg</h1>
     <?php endif; ?>
     <?php if (!empty($errors)) { echo "<p class=\"error-msg\">Ooops, något gick fel!</p>"; } ?>
     <form method="POST" enctype="multipart/form-data">
@@ -176,38 +176,46 @@
             <img src="../<?php echo $image; ?>" alt="Inläggets bild" class="border-xl full-width-img">
         </div>
         <?php endif; ?>
-            <?php if (in_array("file", $errors)) { echo $obligatoryField; } ?>
-            <?php if (!empty($fileError)) { echo "$fileError<br>"; } ?>
-        </div>
+        <?php if (in_array("file", $errors)) { echo $obligatoryField; } ?>
+        <?php if (!empty($fileError)) { echo "$fileError<br>"; } ?>
         <div class="edit-post-div">
             <label class="form-field__label" for="headline">Rubrik</label><br>
-            <input type="text" class="form-field edit-post__input" name="headline" id="headline" value="<?php echo $fields["headline"]; ?>" required><br>
+            <input type="text" class="form-field edit-post__input" name="headline" id="headline" value="<?php echo formatInnerHtml($fields["headline"]); ?>" required><br>
             <?php if (in_array("headline", $errors)) { echo $obligatoryField; } ?>
         </div>
         <div class="edit-post-div">
             <label class="form-field__label" for="post-content">Beskrivning</label><br>
-            <textarea class="form-field edit-post__textarea" name="post-content" id="post-content" rows="10" cols="50" required><?php echo $fields["post-content"]; ?></textarea><br>
+            <textarea class="form-field edit-post__textarea" name="post-content" id="post-content" rows="10" cols="50" required><?php echo formatInnerHtml($fields["post-content"]); ?></textarea><br>
             <?php if (in_array("post-content", $errors)) { echo $obligatoryField; } ?>
         </div>
         <div class="edit-post-div">
-            <h3>Kategori</h3>
+            <h2>Kategori</h2>
             <?php while (mysqli_stmt_fetch($stmt)): ?>
-            <input type="radio" name="category" value="<?php echo $id; ?>" required <?php if ($fields["category"] == $id) { echo "checked"; } ?> id="category">
-            <label class="form-field__label" for="category"><?php echo ucfirst($category); ?></label><br>
+            <label class="radiobutton-wrapper">
+                <input class="radiobutton-wrapper__button" type="radio" name="category" value="<?php echo $id; ?>" required <?php if ($fields["category"] == $id) { echo "checked"; } ?> >
+                <i class="radiobutton-wrapper__icon"></i>
+                <?php echo ucfirst($category); ?>
+            </label>
             <?php endwhile; $stmt->close();?>
             <?php if (in_array("category", $errors)) { echo $obligatoryField; } ?>
         </div>
         <div class="edit-post-div">
-            <h3>Ska inlägget publiceras?</h3>
-            <input type="radio" name="publish" id="publish" value="1" required <?php if ($fields["publish"] == 1) { echo "checked"; } ?> >
-            <label class="form-field__label" for="publish">Publicera</label><br>
-            <input type="radio" name="publish" id="draft" value="2" required <?php if ($fields["publish"] == 2) { echo "checked"; } ?>>
-            <label class="form-field__label" for="draft">Spara som utkast</label><br>
+            <h2>Ska inlägget publiceras?</h2>
+            <label class="radiobutton-wrapper">
+                <input class="radiobutton-wrapper__button" type="radio" name="publish" value="1" required <?php if ($fields["publish"] == 1) { echo "checked"; } ?> >
+                <i class="radiobutton-wrapper__icon"></i>
+                Publicera
+            </label>
+            <label class="radiobutton-wrapper">
+                <input class="radiobutton-wrapper__button" type="radio" name="publish" value="2" required <?php if ($fields["publish"] == 2) { echo "checked"; } ?>>
+                <i class="radiobutton-wrapper__icon"></i>
+                Spara som utkast
+            </label>
             <?php if (in_array("publish", $errors)) { echo $obligatoryField; } ?>
         </div>
         <div class="flexbox-wrapper">
             <button class="button" type="submit" name="submit">Spara</button>
-            <a href="./dashboard.php" class="button error"><br>Gå till panelen</a>
+            <a href="./dashboard.php" class="button error"><br>Till kontrollpanelen</a>
         </div>
     </form>
 </main>
