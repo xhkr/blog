@@ -22,6 +22,16 @@
         $query = "SELECT posts.*, categories.name FROM posts LEFT JOIN categories ON posts.categoryid = categories.id WHERE published = 1 ORDER BY created DESC";
     }
 
+    //Determine if a variable is set and is not NULL
+     $month = "";
+    if(isset($_GET["month"]) ) { //Avoids error message
+        $sort = $_GET["month"];
+    }
+    if($month == "month" && $month = $months[0]) {
+        $query = "SELECT posts.*, categories.name FROM posts LEFT JOIN categories ON posts.categoryid = categories.id WHERE created = 1";
+    }
+
+
     if ($stmt->prepare($query)) {
         $stmt->execute();
         $stmt->bind_result($id, $userId, $created, $updated, $image, $title, $content, $published, $categoryId, $categoryName);
@@ -29,7 +39,7 @@
 
     // TODO: Seperating in different months needs to be handled by PHP and SQL.
     // TODO: Get the styling right on buttons, select and svg.
-    $month = array("Januari",
+    $months = array("Januari",
         "Februari",
         "Mars",
         "April",
@@ -60,10 +70,10 @@
         </div>
     </form>
     <form method="GET" action="archive.php">
-        <label for="sort">Filtrera arkivet månadsvis</label>
+        <label for="month">Filtrera arkivet månadsvis</label>
         <div class="select-arrows">
           <select class="form-field form-field__select" name="sort-month" id="sort-month">
-            <?php foreach ($month as $actualMonth): ?>
+            <?php foreach ($months as $actualMonth): ?>
               <option value="month"><?php echo $actualMonth ?></option>
             <?php endforeach; ?>
           </select>
