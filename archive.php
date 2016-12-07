@@ -73,6 +73,7 @@
         <label for="month">Filtrera arkivet månadsvis</label>
         <div class="select-arrows">
           <select class="form-field form-field__select" name="sort-month" id="sort-month">
+            <option>Alla</option>
             <?php foreach ($months as $actualMonth): ?>
               <option value="month"><?php echo $actualMonth ?></option>
             <?php endforeach; ?>
