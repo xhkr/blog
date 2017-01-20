@@ -1,61 +1,82 @@
 <?php
-    require_once "../templates/header.php";
-    require_once "../assets/session.php";
+    require_once "../assets/db_connect.php";
     require_once "../assets/functions.php";
+    require_once "../assets/session.php";
 
-    // Redirect to login.php if no session active.
-    if (!isset($_SESSION["logged-in"]) && $_SESSION["logged-in"] == FALSE):
+    if (!isset($_SESSION["logged-in"]) || $_SESSION["logged-in"] == FALSE) {
         header("Location: ../login.php");
-    endif;
+        exit();
+    }
 
-    // If-statement to check if button for removing comments is set
+    require_once "../templates/header.php";
+
+/*******************************************************************************
+    START OF VARIABLES USED ON PAGE
+*******************************************************************************/
+
+    $errorMessage = NULL;
+    $queryFailed = "Det blev något fel. Försök igen senare.";
+
+/*******************************************************************************
+    START OF QUERY TO REMOVE COMMENT
+*******************************************************************************/
+
     if (isset ($_POST["remove-comment"])):
+
         $commentToDelete = $_POST["remove-comment"];
         $query = "DELETE FROM comments WHERE id = '{$commentToDelete}'";
+
         if ($stmt->prepare($query)):
             $stmt->execute();
+
         else:
-            echo "Fel på queryn";
+            $errorMessage = $queryFailed;
+
         endif;
+
     endif;
 
-        // For superuser print all comments
-    if ($_SESSION["permission"] == 1):
+/*******************************************************************************
+    START OF QUERY TO PRINT COMMENTS (ALL FOR SUPERUSERS)
+*******************************************************************************/
 
-        // select all comments and username and email from user
-        $query  = "SELECT comments.*, users.username, users.email
+    if ($_SESSION["permission"] == 1) {
+
+        $query = "SELECT comments.*, users.username, users.email, posts.title
                     FROM comments
                     LEFT JOIN users
-                    ON comments.userid = users.id";
-        if ($stmt -> prepare($query)):
-            $stmt-> execute();
-            $stmt -> bind_result($commentId, $userId, $date, $email, $name, $content, $website, $postId, $userName, $userMail);
+                    ON comments.userid = users.id
+                    LEFT JOIN posts
+                    ON comments.postid = posts.id";
 
-        else:
-            echo "wrong query";
-        endif;
-    endif;
+    } elseif ($_SESSION["permission"] == 0) {
 
-    // If user has permission "redaktör" only print the comments connected to the posts for that user.
-    if ($_SESSION["permission"] == 0):
         $userId = $_SESSION["userid"];
-        $query  = "SELECT comments.*, users.username, users.email
+
+        $query  = "SELECT comments.*, users.username, users.email, posts.title
                     FROM comments
                     LEFT JOIN users
                     ON comments.userid = users.id
                     LEFT JOIN posts
                     ON comments.postid = posts.id
                     WHERE posts.userid = '{$userId}'";
-        if ($stmt -> prepare($query)):
-            $stmt-> execute();
-            $stmt -> bind_result($commentId, $userId, $date, $email, $name, $content, $website, $postId, $userName, $userMail);
+    }
 
-        else:
-            echo "wrong query";
-        endif;
+    if ($stmt -> prepare($query)):
+        $stmt-> execute();
+        $stmt -> bind_result($commentId, $userId, $date, $email, $name, $content, $website, $postId, $userName, $userMail, $postTitle);
+        $stmt->store_result();
+        $rows = $stmt->num_rows;
+    else:
+        $errorMessage = $queryFailed;
+
     endif;
+
 ?>
 <main>
+    <?php if ($rows == 0): ?>
+        <h1 class="center-text">Det finns inga kommentarer!</h1>
+    <?php else: ?>
     <?php if ($_SESSION["permission"] == 1): ?>
         <h1 class="center-text margin-bottom-l">Alla kommentarer</h1>
     <?php else: ?>
@@ -74,27 +95,26 @@
                 </tr>
             </thead>
             <tbody>
-                    <?php while (mysqli_stmt_fetch($stmt)): ?>
-                        <tr>
-                            <td class="inline-block"><?php echo $content; ?></td>
-                            <td class="inline-block">Skriven av: <?php echo checkExistingOrReturnPredefined($name, $userName); ?></td>
-                            <td class="inline-block">E-postadress: <a href="mailto:<?php echo checkExistingOrReturnPredefined($email, $userMail); ?>"><?php echo checkExistingOrReturnPredefined($email, $userMail); ?></a></td>
-                            <td class="inline-block saffron-text primary-brand-font">[<?php echo $date; ?>]</td>
-                            <td class="inline-block saffron-text primary-brand-font">
-                            [Kommentar på inlägg:
-                                <?php
-                                // TODO: Change this to post title instead.
-                                echo $postId;
-                                ?>]
-                            </td>
-                            <td class="inline-block">
-                                <button type="submit" class="button error margin-bottom-xl" name="remove-comment" value="<?php echo $commentId; ?>">Ta bort kommentar</button>
-                            </td>
-                        </tr>
-                    <?php endwhile; ?>
+                <?php while (mysqli_stmt_fetch($stmt)): ?>
+                    <tr>
+                        <td class="inline-block"><?php echo $content; ?></td>
+                        <td class="inline-block">Skriven av: <?php echo checkExistingOrReturnPredefined($name, $userName); ?></td>
+                        <td class="inline-block">E-postadress: <a href="mailto:<?php echo checkExistingOrReturnPredefined($email, $userMail); ?>"><?php echo checkExistingOrReturnPredefined($email, $userMail); ?></a></td>
+                        <td class="author-info">[ <?php echo $date; ?> ]</td>
+                        <td class="author-info">
+                        [ Kommentar på inlägg: <a class="author-info__links" href="../post.php?getpost=<?php echo $postId; ?>"><?php echo $postTitle; ?></a> ]
+                        </td>
+                        <td class="inline-block">
+                            <button type="submit" class="button error margin-bottom-xl" name="remove-comment" value="<?php echo $commentId; ?>">Ta bort kommentar</button>
+                        </td>
+                    </tr>
+                <?php endwhile; ?>
             </tbody>
         </table>
     </form>
-    <?php if (!empty($_GET["errorMessage"])) { echo $_GET["errorMessage"]; } ?>
+    <?php if ($errorMessage): ?>
+        <p class="error-msg"><?php echo $errorMessage; ?></p>
+    <?php endif; ?>
+<?php endif; ?>
 </main>
 <?php require_once "../templates/footer.php"; ?>

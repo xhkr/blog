@@ -3,7 +3,6 @@ fieldset {
     margin: 2em 0;
 }
 
-// TODO: När texten är autofill, se till att textfärgen är vit.
 input:-webkit-autofill {
     -webkit-box-shadow: 0 0 0px 1000px $baseColor inset;
     -webkit-text-fill-color: $baseColor2;
@@ -11,30 +10,33 @@ input:-webkit-autofill {
 
 // This class is also found in "_typography.scss"
 .form-field {
+    background-color: $baseColor;
     border: 0;
+    border-radius: 0;
     border-bottom: 2px solid $primary;
-    background-color: transparent;
+    box-sizing: border-box;
     color: $baseColor2;
     font-family: $secondaryBrandFont;
-    font-size: 4rem;
+    font-§: 1.6rem;
     height: 4rem;
     margin: 0.5em 0;
     outline: none;
     width: 100%;
 }
 
-// TODO: sort out border-radius and text-align
 .form-field__select {
-    box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.2);
-    background-color: $primary;
-    border-radius: 5px;
+    box-shadow: none;
+    border-radius: 0;
     cursor: pointer;
-    font-size: 1.2rem;
+    font-size: 2rem;
     margin: 1em;
     margin-left: 0;
-    width: 100%;
-    text-transform: uppercase;
+    padding-left: 0.5em;
     text-shadow: 1px 1px 3px $baseColorSmallTransparent;
+    width: 100%;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
 }
 
 .form-field:visited {
@@ -51,19 +53,14 @@ input:-webkit-autofill {
     width: 100%;
 }
 
-// TODO: Get the styling right!
 .form-field.edit-post__input {
     height: 3rem;
-    font-size: 3rem;
 }
 
 .edit-post__textarea {
-    box-sizing: border-box;
     border: 2px solid $primary;
-    font-size: 1.6rem;
-    line-height: 1.5em;
+    line-height: 1.3em;
     padding: 0.2em;
-    width: 100%;
     height: auto;
 }
 

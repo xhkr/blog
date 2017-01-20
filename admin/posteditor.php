@@ -1,12 +1,11 @@
 <?php
-    require_once "../templates/header.php";
     require_once "../assets/db_connect.php";
     require_once "../assets/functions.php";
     require_once "../assets/session.php";
 
-    // Redirect to login.php if no session active.
-    if (!isset($_SESSION["logged-in"]) && $_SESSION["logged-in"] == FALSE) {
+    if (!isset($_SESSION["logged-in"]) || $_SESSION["logged-in"] == FALSE) {
         header("Location: ../login.php");
+        exit();
     }
 
     // This is used to populate input fields.
@@ -26,7 +25,7 @@
 
         $query = "SELECT * FROM posts WHERE id = '{$postIdToEdit}'";
 
-        // Insert and update database values
+
         if ($stmt->prepare($query)) {
             $stmt->execute();
             $stmt->bind_result($id, $userId, $created, $updated, $image, $title, $content, $published, $categoryId);
@@ -45,19 +44,14 @@
    START OF CHECK TO CONFIRM THAT ALL REQUIRED FIELDS ARE FILLED.
 *******************************************************************************/
 
-    // This is used to stop user from leaving important fields empty.
     $allRequiredFilled = TRUE;
-
-    // If a required field is left empty, info about the key will be inserted in $errors
-    // $obligatoryField is used to print out error message to user
     $errors = array();
     $obligatoryField = "<p class=\"error-msg\">Obligatoriskt fält</p><br>";
     if (isset($_POST["submit"])) {
 
-        // These variables are used for checking if all fields are filled.
         $requiredFields = array("publish", "headline", "post-content", "category");
 
-        // This checks if all required fields are filled.
+        // Checks if all required fields are filled
         foreach ($fields as $key => $value) {
             $isRequired = in_array($key, $requiredFields);
 
@@ -100,7 +94,7 @@
                 if ($stmt->prepare($query)) {
                     $stmt->execute();
                 } else {
-                    // If problem occurs, create variable $databaseError
+
                     $databaseError = "<p class=\"error-msg\">Det gick inte att uppdatera inlägget i databasen. Försök igen.</p>";
                 }
 
@@ -109,21 +103,20 @@
             }
 
             if (!isset($_GET["edit"])) {
-                // Insert and update database values
-                if ($stmt->prepare($query)) {
-                    $stmt->execute();
-                    $imageId = $stmt->insert_id; // Catches the created post.id for later use
+                // Working with the uploaded file
+                $fileName = basename($_FILES["post-img"]["name"]);
+                $temporaryFile = $_FILES["post-img"]["tmp_name"]; // The temporary file path
+                $type = pathinfo($fileName, PATHINFO_EXTENSION);
+                $fileError = checkUploadedFile($_FILES["post-img"]); // A function to check file errors
+                if (!$fileError) {
+                    // Insert and update database values
+                    if ($stmt->prepare($query)) {
+                        $stmt->execute();
+                        $imageId = $stmt->insert_id; // Catches the created post.id for later use
 
-                    // Now lets start working with the uploaded file
-                    $fileName = basename($_FILES["post-img"]["name"]); // The name of the file
-                    $temporaryFile = $_FILES["post-img"]["tmp_name"]; // The temporary file path
-                    $type = pathinfo($fileName, PATHINFO_EXTENSION); // The file type
-                    $fileError = checkUploadedFile($_FILES["post-img"]); // A function to check file errors
-                    $targetName = "../uploads/postimg/" . basename("postimg_") . $imageId . ".$type"; // The new file path connected with post.id column
-
-                    // Move uploaded file to "uploads/postimg/ and update $targetName to a appropiate path in table posts.image
-                    if (!$fileError) {
-                        move_uploaded_file($temporaryFile, $targetName); // Move file from temp to new file path
+                        // Move uploaded file to "uploads/postimg/ and update $targetName to a appropiate path in table posts.image
+                        $targetName = "../uploads/postimg/" . basename("postimg_") . $imageId . ".$type"; // The new file path connected with post.id column
+                        move_uploaded_file($temporaryFile, $targetName);
                         $targetName = "uploads/postimg/". basename("postimg_") . $imageId . ".$type"; // Renames the file path
                         $updateQuery = "UPDATE posts SET image ='{$targetName}' WHERE id ='{$imageId}' "; // Inserts correct file path into db column posts.image
 
@@ -133,19 +126,20 @@
                         } else {
                             $databaseError = "<p class=\"error-msg\">Det gick inte att lägga upp inlägget i databasen. Försök igen.</p>";
                         }
-                        // Redirect to confirmation.php
+
                         header("Location: ./confirmation.php");
+                    } else {
+                        $databaseError = "<p class=\"error-msg\">Det gick inte att lägga upp inlägget i databasen. Försök igen.</p>";
                     }
-                } else {
-                    // If problem occurs, create variable $databaseError
-                    $databaseError = "<p class=\"error-msg\">Det gick inte att lägga upp inlägget i databasen. Försök igen.</p>";
                 }
             }
         }
     }
 
+    require_once "../templates/header.php";
+
 /*******************************************************************************
-   START OF QUERY THAT PRINTS CATEGORIES
+            QUERY THAT PRINTS CATEGORIES
 *******************************************************************************/
 
     $query = "SELECT * FROM categories";
@@ -153,10 +147,6 @@
         $stmt->execute();
         $stmt->bind_result($id, $category);
     }
-
-/*******************************************************************************
-   START OF HTML
-*******************************************************************************/
 ?>
 <main>
     <?php if (isset($_GET["edit"])): ?>
@@ -196,7 +186,7 @@
                 <i class="radiobutton-wrapper__icon"></i>
                 <?php echo ucfirst($category); ?>
             </label>
-            <?php endwhile; $stmt->close();?>
+            <?php endwhile; ?>
             <?php if (in_array("category", $errors)) { echo $obligatoryField; } ?>
         </div>
         <div class="edit-post-div">

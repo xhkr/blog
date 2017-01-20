@@ -2,59 +2,149 @@
     require_once "./templates/header.php";
     require_once "./assets/functions.php";
 
-    $query = "SELECT posts.*, categories.name FROM posts LEFT JOIN categories ON posts.categoryid = categories.id WHERE published = 1 ORDER BY created DESC";
+    $query = "SELECT * FROM posts WHERE published = 1 ORDER BY EXTRACT(MONTH FROM created) ASC";
 
-    //Determine if a variable is set and is not NULL
-     $sort = "";
-    if(isset($_GET["sort"]) ) { //Avoids error message
+    $month = "";
+    $sort = "";
+
+/*******************************************************************************
+    START OF MONTH ARRAY
+*******************************************************************************/
+
+    if ($stmt->prepare($query)) {
+        $stmt->execute();
+        $stmt->bind_result($id, $userId, $created, $updated, $image, $title, $content, $published, $categoryId);
+    }
+
+    $months = array();
+
+    while (mysqli_stmt_fetch($stmt)) {
+        // WINDOWS
+        setlocale(LC_ALL, 'swedish');
+        // MAC
+        setlocale(LC_ALL, 'sv_SE');
+
+        array_push($months, array(
+            "name" => strftime("%B", strtotime($created)),
+            "number" => date("n", strtotime($created))
+        ));
+    }
+
+/*******************************************************************************
+    START OF POST ARRAY
+*******************************************************************************/
+
+    if (isset($_GET["sort"]) ) {
+
+        $month = $_GET["month"];
         $sort = $_GET["sort"];
-    }
-    // Sort post by name
-    if($sort == "name") {
-        $query = "SELECT posts.*, categories.name FROM posts LEFT JOIN categories ON posts.categoryid = categories.id WHERE published = 1 ORDER BY title ASC";
-    }
-    // Sort post by lastest entry
-    if($sort == "asc") {
-        $query = "SELECT posts.*, categories.name FROM posts LEFT JOIN categories ON posts.categoryid = categories.id WHERE published = 1 ORDER BY created ASC";
-    }
-    // Sort post by the last one
-    if($sort == "desc") {
-        $query = "SELECT posts.*, categories.name FROM posts LEFT JOIN categories ON posts.categoryid = categories.id WHERE published = 1 ORDER BY created DESC";
+
+        if ($sort == "asc") {
+            if ($month == "all") {
+                $query = "SELECT * FROM posts WHERE published = 1 ORDER BY created ASC";
+
+            } else {
+                $query = "SELECT * FROM posts WHERE published = 1 AND EXTRACT(MONTH FROM created) = {$month} ORDER BY created ASC";
+            }
+        }
+
+        if ($sort == "desc") {
+            if ($month == "all") {
+                $query = "SELECT * FROM posts WHERE published = 1 ORDER BY created DESC";
+
+            } else {
+                $query = "SELECT * FROM posts WHERE published = 1 AND EXTRACT(MONTH FROM created) = {$month} ORDER BY created DESC";
+            }
+        }
+
+        if ($sort == "name") {
+            if ($month == "all") {
+                $query = "SELECT * FROM posts WHERE published = 1 ORDER BY title ASC";
+
+            } else {
+                $query = "SELECT * FROM posts WHERE published = 1 AND EXTRACT(MONTH FROM created) = {$month} ORDER BY title ASC";
+            }
+        }
+
+    } else {
+        $query = "SELECT * FROM posts WHERE published = 1 ORDER BY created DESC";
     }
 
     if ($stmt->prepare($query)) {
         $stmt->execute();
-        $stmt->bind_result($id, $userId, $created, $updated, $image, $title, $content, $published, $categoryId, $categoryName);
+        $stmt->bind_result($id, $userId, $created, $updated, $image, $title, $content, $published, $categoryId);
     }
 
-    // TODO: Seperating in different months needs to be handled by PHP and SQL.
-    // TODO: Get the styling right on buttons, select and svg.
+    $posts = array();
 
+    while (mysqli_stmt_fetch($stmt)) {
+        array_push($posts, array(
+            "id" => $id,
+            "created" => $created,
+            "title" => $title
+        ));
+    }
+
+/*******************************************************************************
+    SET HEADLINE
+*******************************************************************************/
+
+    if (isset($_GET["month"])) {
+        $monthTitle = $_GET["month"];
+    }
+
+    if (isset($monthTitle) && $monthTitle <= 12 && $monthTitle >= 1) {
+        $headLine = strftime("%B", strtotime($created));
+
+    } else {
+        $headLine = "Alla inlägg";
+    }
 ?>
 <main>
     <h1 class="margin-bottom-l">Arkiv</h1>
     <form method="GET" action="archive.php">
-        <label for="sort">Sortera arkivet</label>
-        <div class="select-arrows">
-          <select class="form-field form-field__select" name="sort" id="sort">
-              <option value="desc">Senast publicerad</option>
-              <option value="asc">Tidigast publicerad</option>
-              <option value="name">Sortera efter bokstavsordning (A-Z)</option>
-          </select>
-          <button class="button button--small border-radius margin-bottom-l" type="submit">Sortera</button>
-          <!-- <svg class="icon select-arrows">
-            <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#select-arrows"></use>
-          </svg> -->
+        <div class="archive__flex-select-wrapper">
+            <div class="archive__select-wrapper">
+                <label class="form-field__label" for="filter">Visa inlägg från</label>
+                <select class="form-field form-field__select margin-bottom-l" name="month" id="filter">
+                    <option value="all">Alla månader</option>
+                    <?php for ($i=0; $i < count($months); $i++):
+                        $month = $months[$i];
+                        $selectedAttribute = "";
+                        if (isset($_GET["month"]) && $_GET["month"] == $month["number"]) {
+                            $selectedAttribute = "selected";
+                        }
+                        // Takes existing array and returns a new array without duplicate values.
+                        $months = uniqueArray($months,'number');
+                    ?>
+                     <option value="<?php echo $month["number"]; ?>" <?php echo $selectedAttribute; ?>><?php echo ucfirst($month["name"]); ?></option>
+                    <?php endfor; ?>
+                </select>
+            </div>
+            <div class="archive__select-wrapper">
+                <label class="form-field__label" for="sort">Sortera arkivet efter</label>
+                <select class="form-field form-field__select margin-bottom-l" name="sort" id="sort">
+                    <?php
+                        $selected = "";
+                        if (isset($_GET["sort"])) {
+                            $selected = $_GET["sort"];
+                        }
+                    ?>
+                    <option value="desc" <?php if ($selected == "desc") { echo "selected"; } ?> >Senast publicerad</option>
+                    <option value="asc" <?php if ($selected == "asc") { echo "selected"; } ?> >Tidigast publicerad</option>
+                    <option value="name" <?php if ($selected == "name") { echo "selected"; } ?> >Bokstavsordning (A-Z)</option>
+                </select>
+            </div>
         </div>
+        <button class="button margin-bottom-xl" type="submit">Sortera</button>
     </form>
     <div class="list-wrapper">
-        <h2>November 2016</h2>
+        <h2><?php echo ucfirst($headLine); ?></h2>
         <ul class="no-padding">
-        <?php while (mysqli_stmt_fetch($stmt)): ?>
-            <li class="list-style-none"><span class="saffron-text primary-brand-font">[<?php echo formatDate($created); ?>]</span><a href="post.php?getpost=<?php echo $id ?>"><?php echo $title; ?></a></li>
-        <?php endwhile; ?>
+        <?php for ($i=0; $i < count($posts); $i++): $post = $posts[$i]; ?>
+            <li class="list-style-none"><span class="archive__date">[ <?php echo formatDate($post["created"]); ?> ]</span> <a class="archive__link" href="post.php?getpost=<?php echo $post["id"] ?>"><?php echo $post["title"]; ?></a></li>
+        <?php endfor; ?>
         </ul>
     </div>
 </main>
 <?php require_once "./templates/footer.php"; ?>
-

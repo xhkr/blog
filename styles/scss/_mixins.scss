@@ -1,3 +1,28 @@
+@mixin clearfix() {
+    &:before,
+    &:after {
+        content: "";
+        display: table;
+    }
+    &:after {
+        clear: both;
+    }
+}
+
+@mixin complimentaryText {
+    color: $complimentary;
+    display: inline-block;
+    font-family: $primaryBrandFont;
+    line-height: 1.2;
+    margin: 0;
+}
+
+@mixin introductionText {
+    font-size: 2rem;
+    margin: 0.7em 0 1.5em;
+    text-align: center;
+}
+
 @mixin hidden-visually {
     border: 0;
     clip: rect(1px, 1px, 1px, 1px);
@@ -11,8 +36,8 @@
 @mixin flexbox() {
     display: -webkit-box;
     display: -moz-box;
-    display: -ms-flexbox;
     display: -webkit-flex;
+    display: -ms-flexbox;
     display: flex;
 }
 
@@ -21,12 +46,36 @@
     justify-content: $value;
 }
 
+@mixin flexboxFlexDirection($value) {
+    -webkit-flex-direction: $value;
+    -ms-flex-direction: $value;
+    flex-direction: $value;
+}
+
+@mixin flexboxFlexWrap($value) {
+    -webkit-flex-wrap: $value;
+    -ms-flex-wrap: $value;
+    flex-wrap: $value;
+}
+
+@mixin flex($value) {
+    -webkit-box-flex: $value;
+    -webkit-flex: $value;
+    -ms-flex: $value;
+    flex: $value;
+}
+
+@mixin word-wrap() {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    -ms-word-break: break-all;
+    word-break: break-word;
+}
 
 /*******************************************************************************
     MEDIA QUERIES / RESPONSIVE DESIGN
     _variables.scss
 *******************************************************************************/
-// TODO: Clean up comments.
 
 @mixin mobileSizeSmall {
     @media (max-width: #{$widthMobileMedium - 1px}) {
@@ -51,7 +100,3 @@
         @content;
     }
 }
-
-/* Use it like this: */
-
-// @include sizeDesktop {}

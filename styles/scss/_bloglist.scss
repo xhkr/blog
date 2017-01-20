@@ -1,55 +1,110 @@
-// TODO: This needs to be sorted out!
-// This wrapps the whole content in a post, including image.
 .blogpost {
     padding: 10rem 0 3rem 0;
 }
 
-.blogpost__article {
+.blogpost__flex-list {
+    @include sizeDesktop {
+        margin: 0 -5px;
+        @include flexbox();
+        @include flexboxFlexWrap(wrap);
+    }
+}
+
+.blogpost__article,
+.blogpost__article-large {
+    @include clearfix();
+    box-sizing: border-box;
     display: block;
     margin: 0 auto;
-    font-size: 2.0rem;
     width: 100%;
+    @include sizeDesktop {
+        width: calc(100%/3);
+        border: 5px solid transparent;
+    }
+}
+
+.blogpost__article:first-child,
+.blogpost__article:last-child,
+.blogpost__article-large {
+    @include sizeDesktop {
+        padding: 0;
+        width: 100%;
+    }
 }
 
 .blogpost-wrapper {
-    margin-bottom: 0.2rem;
     position: relative;
+    box-sizing: border-box;
     width: 100%;
+    z-index: 0;
 }
 
 .blogpost-wrapper__img {
     margin: 0 auto;
     width: 100%;
+    z-index: 0;
+    @include sizeDesktop {
+        left: 0;
+        position: absolute;
+        top: 0;
+    }
 }
-    // This wrapps all the text in a post, both paragraphs and headline.
+
+.blogpost-wrapper__img:hover {
+    @include sizeDesktop {
+    filter: blur(1px) grayscale(30%);
+    }
+}
+
+.blogpost-wrapper__img-container,
+.blogpost-wrapper__img-container-large {
+    @include sizeDesktop {
+        padding-top: 56.25%;
+        overflow: hidden;
+        position: relative;
+    }
+}
+
+.blogpost-wrapper__img-container:first-child,
+.blogpost-wrapper__img-container:last-child,
+.blogpost-wrapper__img-container-large {
+    @include sizeDesktop {
+        max-height: 100%;
+    }
+}
+
 .blogpost-wrapper__text {
     box-sizing: border-box;
     bottom: 5px;
     color: $baseColor2;
     display: block;
+    float: left;
     left: 0;
     position: relative;
-    padding: 1em 0.7em 0;
+    padding: 0.2em 0.4em 0;
     width: 100%;
 }
 
-.blogpost-wrapper__text:hover {
-    background: $baseColorTransparent;
-    -webkit-backdrop-filter: blur(3px);
-    backdrop-filter: blur(3px);
+.blogpost-wrapper__headline {
+    padding-top: 2rem;
+    line-height: 3.2rem;
 }
 
 .blogpost-wrapper__tags {
-    margin: 0.2em 0;
+    margin: 0.2em 0 4rem;
     line-height: 1.3em;
     color: $primary;
-    font-size: 1.6rem;
     font-family: $primaryBrandFont;
 }
 
 .blogpost-wrapper__links {
     color: $primary;
 }
+
 .blogpost-wrapper__links:hover {
     color: $primaryAlternative;
+}
+
+.blogpost__link:hover {
+    color: $complimentary;
 }

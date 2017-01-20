@@ -1,6 +1,21 @@
 <?php
 
 /**
+ * The function checks if an alternative variable exists and return either that or a
+ * predefined variable.
+ * @param  string $alternative The optional alternative variable.
+ * @param  string $predefined  The predefined variable.
+ * @return string              Return one of the two.
+ */
+function checkExistingOrReturnPredefined($alternative, $predefined) {
+    if ($alternative != NULL) {
+        return $alternative;
+    } else {
+        return $predefined;
+    }
+}
+
+/**
  * The function checks size and type on uploaded files.
  * @param  string $file The uploaded file.
  * @return string       The function returns information about the error.
@@ -25,30 +40,10 @@ function checkUploadedFile($file) {
 }
 
 /**
-* The functions stores variables in the session
-* @param 	int    $id            The users id
-* @param 	int    $permission    The users permission level
-* @param 	string $uname         The users username
-* @param 	string $upass         The users password
-*/
-function storeUserInSession($id, $permission, $uname, $upass) {
-    $_SESSION["logged-in"] = TRUE;
-    $_SESSION["userid"] = $id;
-    $_SESSION["permission"] = $permission;
-    $_SESSION["username"] = $uname;
-    $_SESSION["userpassword"] = $upass;
-}
-
-/**
- * The function unsets and destroy cookies stored in a session.
+ * The function converts permission int to string.
+ * @param  int      $permission     The user's permission level.
+ * @return string                   The user's permission level as string.
  */
-function logout() {
-    unset($_SESSION["logged-in"]);
-    setcookie("session_catsandspace", "", time()-(60*60*24), "/");
-    session_destroy();
-}
-
-// TODO: Describe what this function does!
 function convertPermissionToString($permission) {
     if ($permission == 0) {
         return utf8_decode("Redaktör");
@@ -58,13 +53,14 @@ function convertPermissionToString($permission) {
     return NULL;
 }
 
-// TODO: Describe what this does!
-function checkExistingOrReturnPredefined($alternative, $predefined) {
-    if ($alternative != NULL) {
-        return $alternative;
-    } else {
-        return $predefined;
-    }
+/**
+ * The function formats a timestamp according to year-month-date.
+ * @param  int $timestamp       The timestamp returned from the database
+ * @return int $formattedDate   The date formatted as year-month-date.
+ */
+function formatDate($timestamp) {
+    $formattedDate = date('Y-m-d', strtotime($timestamp));
+    return $formattedDate;
 }
 
 /**
@@ -75,7 +71,17 @@ function checkExistingOrReturnPredefined($alternative, $predefined) {
 function formatInnerHtml($string) {
     $newString = str_replace("\n", "<br>", $string);
     $newString = str_replace("\r", "", $newString);
+    $newString = str_replace("<", "&lt;", $newString);
     return replaceSpecialCharacters($newString);
+}
+
+/**
+ * The function unsets and destroy cookies stored in a session.
+ */
+function logout() {
+    unset($_SESSION["logged-in"]);
+    setcookie("session_catsandspace", "", time()-(60*60*24), "/");
+    session_destroy();
 }
 
 /**
@@ -94,13 +100,39 @@ function replaceSpecialCharacters($string) {
 }
 
 /**
- * The function formats a timestamp according to year-month-date.
- * @param  int $timestamp       The timestamp returned from the database
- * @return int $formattedDate   The date formatted as year-month-date.
+* The functions stores variables in the session
+* @param 	int    $id            The users id
+* @param 	int    $permission    The users permission level
+* @param 	string $uname         The users username
+* @param 	string $upass         The users password
+*/
+function storeUserInSession($id, $permission, $uname, $upass) {
+    $_SESSION["logged-in"] = TRUE;
+    $_SESSION["userid"] = $id;
+    $_SESSION["permission"] = $permission;
+    $_SESSION["username"] = $uname;
+    $_SESSION["userpassword"] = $upass;
+}
+
+/**
+ * The function takes a existing array and returns a new "unique" array without duplicate values.
+ * @param  array    $array        The array that needs to be checked for multiple values
+ * @param  int      $key          Key value that needs to be checked
+ * @return array    $tempArray    Array that does not contain ints or duplicated values
  */
-function formatDate($timestamp) {
-    $formattedDate = date('Y-m-d', strtotime($timestamp));
-    return $formattedDate;
+function uniqueArray($array, $key) {
+    $tempArray = array();
+    $i = 0;
+    $keyArray = array();
+
+    foreach ($array as $value) {
+        if (!in_array($value[$key], $keyArray)) {
+            $keyArray[$i] = $value[$key];
+            $tempArray[$i] = $value;
+        }
+        $i++;
+    }
+    return $tempArray;
 }
 
 ?>

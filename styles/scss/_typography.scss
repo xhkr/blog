@@ -1,10 +1,10 @@
 html {
-    font-family: $secondaryBrandFont;
     font-size: 62.5%;
 }
 
 body {
     color: $baseColor2;
+    font-family: $secondaryBrandFont;
     font-size: 1.6rem;
 }
 
@@ -27,24 +27,18 @@ h2 {
     margin-bottom: 0.5em;
 }
 
-.logo-title {
+.header-logotext__text {
     font-family: $primaryBrandFont;
     font-weight: $primaryBrandWeight;
     font-size: 3rem;
+    line-height: 1.8;
     margin: 0;
-    padding-top: 0.8rem;
-    text-align: center;
+    padding: 0.8rem 0 0 1rem;
 
-    @include sizeTablet {
-        font-size: 4rem;
-        margin: 0;
-        padding-top: 0.3rem;
-    }
-
-    @include sizeDesktop {
-        font-size: 4rem;
-        margin: 0;
-        padding-top: 0.3rem;
+    @include mobileSizeSmall {
+        font-size: 2.5rem;
+        margin-top: 0;
+        padding: 1rem 0 0 0.2rem;
     }
 }
 
@@ -54,12 +48,5 @@ a {
 }
 
 .introduction-paragraph {
-    font-size: 2rem;
-    margin: 0.7em 0 1.5em;
-    text-align: center;
-}
-
-.smaller-font {
-    font-size: 2rem;
-    //font-size: 1.4rem;
+    @include introductionText;
 }
